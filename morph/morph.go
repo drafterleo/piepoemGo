@@ -26,6 +26,7 @@ import (
 	//"fmt"
 	"os/exec"
 	"bytes"
+	"fmt"
 )
 
 var (
@@ -110,6 +111,8 @@ func dataPath() string {
 	//	panic(err)
 	//}
 	//return filepath.Join(filepath.Dir(currDir), "data/morph")
+
+	fmt.Println(os.Getwd())
 
 	cmd := exec.Command("python", "-c", "import pymorphy2_dicts_ru as p; print(p.__path__[0])")
 	var buf bytes.Buffer
