@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
-	//word2vec "./word2vec"
-	poem_model "./poem_model"
+	"./poem_model"
+	"./morph"
 )
 
-func main() {
+func main () {
+	//testPoemModel()
+	testMorph()
+}
+
+func testPoemModel() {
 	pm := new(poem_model.PoemModel)
 	pm.LoadJsonModel("./data/poems_model.json")
 	fmt.Println(pm.Poems[0])
@@ -22,5 +27,11 @@ func main() {
 	fmt.Printf("%+v", seedWords)
 	bestWords := pm.W2V.MostSimilar(seedWords)
 	fmt.Printf("Best Words %+v\n", bestWords)
+}
 
+func testMorph () {
+	words, norms, tags := morph.Parse("опилки")
+	for i := range words {
+		fmt.Printf("%-4s %-5s %s\n", words[i], norms[i], tags[i])
+	}
 }
