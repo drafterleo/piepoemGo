@@ -16,14 +16,11 @@
 package morph
 
 import (
-	//"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"os"
-	//"os/exec"
 	"path/filepath"
 	"strings"
-	//"fmt"
 	"os/exec"
 	"bytes"
 	"fmt"
