@@ -8,8 +8,8 @@ import (
 )
 
 func main () {
-	//testPoemModel()
-	testMorph()
+	testPoemModel()
+	//testMorph()
 }
 
 func testPoemModel() {
@@ -24,9 +24,10 @@ func testPoemModel() {
 	//}
 	//fmt.Println(pm.W2V.Vec[0])
 
-	seedWords := []string{"принц_NOUN", "нищий_NOUN"}
-	fmt.Printf("%+v", seedWords)
-	bestWords := pm.W2V.MostSimilar(seedWords)
+	seedWords := []string{"принц", "нищий"}
+	tokens := tokenizeWords(seedWords)
+	fmt.Printf("%+v", tokens)
+	bestWords := pm.W2V.MostSimilar(tokens)
 	fmt.Printf("Best Words %+v\n", bestWords)
 }
 
@@ -36,7 +37,7 @@ func testMorph () {
 		fmt.Printf("%-4s %-5s %s\n", words[i], norms[i], tags[i])
 	}
 
-	inWords := []string{"еж", "нищий"}
+	inWords := []string{"принц", "нищий"}
 	tokens := tokenizeWords(inWords)
 	fmt.Printf("Tokenized words %v\n", tokens)
 }
@@ -52,7 +53,7 @@ func tokenizeWords(words []string) []string {
 
 	STOP_TAGS := map[string]bool {"PREP": true, "CONJ": true, "PRCL": true, "NPRO": true, "NUMR": true}
 
-	result := make([]string, len(words), len(words))
+	result := make([]string, 0, len(words))
 
 	for _, w := range words {
 		_, morphNorms, morphTags := morph.Parse(w)

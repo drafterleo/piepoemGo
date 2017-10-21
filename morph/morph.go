@@ -65,7 +65,7 @@ func Parse(word string) (words []string, norms []string, tags []string) {
 }
 
 func init() {
-	dir := dataPath()
+	dir := "./data/morph" //dataPath()
 	prefixesPath := filepath.Join(dir, "paradigm-prefixes.json")
 	suffixesPath := filepath.Join(dir, "suffixes.json")
 	tagsPath := filepath.Join(dir, "gramtab-opencorpora-int.json")

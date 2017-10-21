@@ -90,7 +90,7 @@ func (m *W2VModel) MostSimilar(seedWords []string) []WordData {
 			}
 		}
 		inputPosition[k] = b
-		//fmt.Printf("Word %v Position %v \n", v, b)
+		fmt.Printf("Word %v Position %v \n", v, b)
 	}
 	vec := make([]float32, maxSize)
 	for i, _ := range seedWords {
