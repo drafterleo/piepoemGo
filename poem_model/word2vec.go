@@ -76,7 +76,7 @@ func (m *W2VModel) WordVector(word string) ([]float32, error) {
 	return m.Vec[idx], nil
 }
 
-func (m *W2VModel) MostSimilar(seedWords []string) ([]WordData, error) {
+func (m *W2VModel) MostSimilar(seedWords []string, topN int) ([]WordData, error) {
 	if len(seedWords) == 0 {
 		return nil, fmt.Errorf("no seed words")
 	}
@@ -113,7 +113,7 @@ func (m *W2VModel) MostSimilar(seedWords []string) ([]WordData, error) {
 		vec[k] /= float32(length)
 	}
 
-	bestWords := make([]WordData, N)
+	bestWords := make([]WordData, topN)
 
 	for i := 0; i < m.Words; i++ {
 		c := 0
@@ -130,9 +130,9 @@ func (m *W2VModel) MostSimilar(seedWords []string) ([]WordData, error) {
 			dist += float64(vec[j] * m.Vec[i][j])
 		}
 
-		for j := 0; j < N; j++ {
+		for j := 0; j < topN; j++ {
 			if dist > bestWords[j].Distance {
-				for d := N - 1; d > j; d-- {
+				for d := topN - 1; d > j; d-- {
 					bestWords[d] = bestWords[d-1]
 				}
 				bestWords[j] = WordData{dist, m.Vocab[i]}
