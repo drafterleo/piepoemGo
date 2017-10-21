@@ -81,30 +81,23 @@ func (m *W2VModel) MostSimilar(seedWords []string) ([]WordData, error) {
 		return nil, fmt.Errorf("no seed words")
 	}
 
-	inputPosition := make([]int, 0, len(seedWords))
+	vocabPositions := make([]int, 0, len(seedWords))
 	for _, word := range seedWords {
-		var pos int
-		founded := false
-		for pos = 0; pos < m.Words; pos++ {
-			if m.Vocab[pos] == word {
-				founded = true
-				break
-			}
-		}
+		pos, founded := m.WordIdx[word]
 		if founded {
-			inputPosition = append(inputPosition, pos)
-			fmt.Printf("Word %v Position %v \n", word, pos)
+			vocabPositions = append(vocabPositions, pos)
+			//fmt.Printf("Word %v Position %v \n", word, pos)
 		} else {
 			fmt.Printf("Word '%v' not founded \n", word)
 		}
 	}
 
-	if len(inputPosition) == 0 {
+	if len(vocabPositions) == 0 {
 		return nil, fmt.Errorf("no words in vocabulary")
 	}
 
 	vec := make([]float32, m.Size)
-	for _, wordPos := range inputPosition {
+	for _, wordPos := range vocabPositions {
 		for j := 0; j < m.Size; j++ {
 			vec[j] += m.Vec[wordPos][j]
 		}
@@ -124,7 +117,7 @@ func (m *W2VModel) MostSimilar(seedWords []string) ([]WordData, error) {
 
 	for i := 0; i < m.Words; i++ {
 		c := 0
-		for _, v := range inputPosition {
+		for _, v := range vocabPositions {
 			if v == i {
 				c = 1
 			}
