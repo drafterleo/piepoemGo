@@ -27,8 +27,10 @@ func testPoemModel() {
 	seedWords := []string{"принц", "нищий"}
 	tokens := tokenizeWords(seedWords)
 	fmt.Printf("%+v", tokens)
-	bestWords := pm.W2V.MostSimilar(tokens)
-	fmt.Printf("Best Words %+v\n", bestWords)
+	bestWords, err := pm.W2V.MostSimilar(tokens)
+	if err == nil {
+		fmt.Printf("Best Words %+v\n", bestWords)
+	}
 }
 
 func testMorph () {

@@ -43,7 +43,7 @@ func (pm *PoemModel) tokenizeWords(words []string) []string {
 
 	STOP_TAGS := map[string]bool {"PREP": true, "CONJ": true, "PRCL": true, "NPRO": true, "NUMR": true}
 
-	result := make([]string, len(words), len(words))
+	result := make([]string, 0, len(words))
 
 	for _, w := range words {
 		_, morphNorms, morphTags := morph.Parse(w)
