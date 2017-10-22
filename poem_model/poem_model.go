@@ -121,6 +121,7 @@ func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 				var dist float32
 				for i := 0; i < pm.W2V.Size; i ++ {
 					// dot production
+					//dist += qv[i] * pv[i]
 					dist += qv[i] * pv[i]
 				}
 				sim += dist

@@ -5,6 +5,7 @@ import (
 	"./poem_model"
 	"./morph"
 	"time"
+	_ "strconv"
 )
 
 func main () {
@@ -45,6 +46,21 @@ func testPoemModel() {
 		fmt.Println(elapsed)
 		fmt.Printf("%+v\n", poems)
 	}
+
+	//for i := 0; i < 20; i ++ {
+	//	go poemQuery(pm, queryWords, strconv.Itoa(i) + "a")
+	//	go poemQuery(pm, queryWords, strconv.Itoa(i) + "b")
+	//	go poemQuery(pm, queryWords, strconv.Itoa(i) + "c")
+	//}
+	//
+	//fmt.Scanln()
+}
+
+func poemQuery(pm * poem_model.PoemModel, words []string, id string) {
+	start := time.Now()
+	_ = pm.SimilarPoems(words, 1)
+	elapsed := time.Since(start)
+	fmt.Printf("%s : %v\n", id, elapsed)
 }
 
 func testMorph () {
