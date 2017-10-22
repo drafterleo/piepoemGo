@@ -9,10 +9,12 @@ import (
 )
 
 type PoemModel struct {
-	Poems []string   `json:"poems"`
-	Bags  [][]string `json:"bags"`
-	W2V   W2VModel
+	Poems   []string   `json:"poems"`
+	Bags    [][]string `json:"bags"`
+	W2V     W2VModel
+	Vectors [][][]float32
 }
+
 
 func (pm *PoemModel) LoadJsonModel(fileName string) error {
 	file, err := ioutil.ReadFile(fileName)
@@ -31,6 +33,14 @@ func (pm *PoemModel) LoadJsonModel(fileName string) error {
 func (pm *PoemModel) LoadW2VModel(fileName string) error {
 	pm.W2V.Load(fileName)
 	return nil
+}
+
+
+func (pm *PoemModel) Vectorize() {
+	pm.Vectors = make([][][]float32, len(pm.Bags))
+	for idx, bag := range pm.Bags {
+		pm.Vectors[idx] = pm.TokenVectors(bag)
+	}
 }
 
 func (pm *PoemModel) TokenizeWords(words []string) []string {
@@ -102,14 +112,15 @@ func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 
 	sims := make([]PoemSimilarity, len(pm.Bags))
 
-	for idx, bag := range pm.Bags {
-		poemVecs := pm.TokenVectors(bag)
+	for idx, _ := range pm.Bags {
+		//poemVecs := pm.TokenVectors(pm.Bags[idx])
+		poemVecs := pm.Vectors[idx]
 		var sim float32
 		for _, qv := range queryVecs {
 			for _, pv := range poemVecs {
-				// dot production
 				var dist float32
 				for i := 0; i < pm.W2V.Size; i ++ {
+					// dot production
 					dist += qv[i] * pv[i]
 				}
 				sim += dist
