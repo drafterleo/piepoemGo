@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"./poem_model"
 	"./morph"
-	"strings"
+	"time"
 )
 
 func main () {
@@ -32,9 +32,15 @@ func testPoemModel() {
 	//	fmt.Printf("Best Words %+v\n", bestWords)
 	//}
 
-	queryWords := []string{"вальс"}
-	poems := pm.SimilarPoems(queryWords, 10)
-	fmt.Printf("%+v\n", poems)
+	queryWords := []string{"вальс", "гарнизон", "астролябия"}
+
+	for i := 0; i < 10; i ++ {
+		start := time.Now()
+		poems := pm.SimilarPoems(queryWords, 1)
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
+		fmt.Printf("%+v\n", poems)
+	}
 }
 
 func testMorph () {
@@ -42,49 +48,5 @@ func testMorph () {
 	for i := range words {
 		fmt.Printf("%-4s %-5s %s\n", words[i], norms[i], tags[i])
 	}
-
-	inWords := []string{"принц", "нищий"}
-	tokens := tokenizeWords(inWords)
-	fmt.Printf("Tokenized words %v\n", tokens)
 }
 
-func tokenizeWords(words []string) []string {
-	POS_TAGS := map[string]string {
-		"NOUN": "_NOUN",
-		"VERB": "_VERB", "INFN": "_VERB", "GRND": "_VERB", "PRTF": "_VERB", "PRTS": "_VERB",
-		"ADJF": "_ADJ", "ADJS": "_ADJ",
-		"ADVB": "_ADV",
-		"PRED": "_ADP",
-	}
-
-	STOP_TAGS := map[string]bool {"PREP": true, "CONJ": true, "PRCL": true, "NPRO": true, "NUMR": true}
-
-	result := make([]string, 0, len(words))
-
-	for _, w := range words {
-		_, morphNorms, morphTags := morph.Parse(w)
-		if len(morphNorms) == 0 {
-			continue
-		}
-
-		suffixes := make(map[string]bool)
-
-		for i, tags := range morphTags {
-			norm := morphNorms[i]
-			tag := strings.Split(tags, ",")[0]
-			_, hasStopTag := STOP_TAGS[tag]
-			if hasStopTag {
-				break
-			}
-
-			suffix, hasPosTag := POS_TAGS[tag]
-			_, hasSuffix := suffixes[suffix]
-			if hasPosTag && ! hasSuffix {
-				result = append(result, norm + suffix)
-				suffixes[suffix] = true
-			}
-		}
-	}
-
-	return result
-}
