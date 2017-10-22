@@ -24,13 +24,17 @@ func testPoemModel() {
 	//}
 	//fmt.Println(pm.W2V.Vec[0])
 
-	seedWords := []string{"принц", "нищий"}
-	tokens := tokenizeWords(seedWords)
-	fmt.Printf("%+v", tokens)
-	bestWords, err := pm.W2V.MostSimilar(tokens, 10)
-	if err == nil {
-		fmt.Printf("Best Words %+v\n", bestWords)
-	}
+	//seedWords := []string{"принц", "нищий"}
+	//tokens := pm.TokenizeWords(seedWords)
+	//fmt.Printf("%+v", tokens)
+	//bestWords, err := pm.W2V.MostSimilar(tokens, 10)
+	//if err == nil {
+	//	fmt.Printf("Best Words %+v\n", bestWords)
+	//}
+
+	queryWords := []string{"вальс"}
+	poems := pm.SimilarPoems(queryWords, 10)
+	fmt.Printf("%+v\n", poems)
 }
 
 func testMorph () {

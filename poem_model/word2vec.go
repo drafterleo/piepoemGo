@@ -13,8 +13,8 @@ const maxSize int = 2000
 const N int = 10
 
 type W2VModel struct {
-	Words   int
-	Size    int
+	Words   int				// word count
+	Size    int 			// vector size
 	Vocab   []string
 	WordIdx map[string]int
 	Vec     [][]float32

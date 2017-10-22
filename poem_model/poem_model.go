@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"../morph"
 	"strings"
+	"sort"
 )
 
 type PoemModel struct {
@@ -32,7 +33,7 @@ func (pm *PoemModel) LoadW2VModel(fileName string) error {
 	return nil
 }
 
-func (pm *PoemModel) tokenizeWords(words []string) []string {
+func (pm *PoemModel) TokenizeWords(words []string) []string {
 	POS_TAGS := map[string]string {
 		"NOUN": "_NOUN",
 		"VERB": "_VERB", "INFN": "_VERB", "GRND": "_VERB", "PRTF": "_VERB", "PRTS": "_VERB",
@@ -51,7 +52,7 @@ func (pm *PoemModel) tokenizeWords(words []string) []string {
 			continue
 		}
 
-		suffixes := make(map[string]bool)
+		suffixes := make(map[string]bool) // added suffixes
 
 		for i, tags := range morphTags {
 			norm := morphNorms[i]
@@ -71,4 +72,65 @@ func (pm *PoemModel) tokenizeWords(words []string) []string {
 	}
 
 	return result
+}
+
+func (pm *PoemModel) TokenVectors(tokens []string) [][]float32 {
+	vecs := make([][]float32, 0, len(tokens))
+	for _, token := range tokens {
+		vector, err := pm.W2V.WordVector(token)
+		if err != nil {
+			continue
+		}
+		vecs = append(vecs, vector)
+	}
+	return vecs
+}
+
+func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
+	simPoems := make([]string, 0, topN)
+	tokens := pm.TokenizeWords(queryWords)
+	if len(tokens) == 0 || topN <= 0 {
+		return simPoems
+	}
+
+	queryVecs := pm.TokenVectors(tokens)
+
+	type PoemSimilarity struct {
+		Idx	int
+		Sim float32
+	}
+
+	sims := make([]PoemSimilarity, len(pm.Bags))
+
+	for idx, bag := range pm.Bags {
+		poemVecs := pm.TokenVectors(bag)
+		var sim float32
+		for _, qv := range queryVecs {
+			for _, pv := range poemVecs {
+				// dot production
+				var dist float32
+				for i := 0; i < pm.W2V.Size; i ++ {
+					dist += qv[i] * pv[i]
+				}
+				sim += dist
+			}
+		}
+
+		if len(poemVecs) > 0 {
+			sim /= float32(len(poemVecs) * len(queryVecs))
+		}
+
+		sims[idx].Idx = idx
+		sims[idx].Sim = sim
+	}
+
+	sort.Slice(sims, func (i, j int) bool {
+		return sims[i].Sim > sims[j].Sim
+	})
+
+	for i := 0; i < topN; i ++ {
+		simPoems = append(simPoems, pm.Poems[sims[i].Idx])
+	}
+
+	return simPoems
 }
