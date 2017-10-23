@@ -6,13 +6,15 @@ import (
 	"../morph"
 	"strings"
 	"sort"
+	"github.com/gonum/matrix/mat64"
 )
 
 type PoemModel struct {
-	Poems   []string   `json:"poems"`
-	Bags    [][]string `json:"bags"`
-	W2V     W2VModel
-	Vectors [][][]float32
+	Poems    []string   `json:"poems"`
+	Bags     [][]string `json:"bags"`
+	W2V      W2VModel
+	Vectors  [][][]float32
+	Matrices []mat64.Matrix
 }
 
 
@@ -42,6 +44,16 @@ func (pm *PoemModel) Vectorize() {
 		pm.Vectors[idx] = pm.TokenVectors(bag)
 	}
 }
+
+
+func (pm *PoemModel) Matricize() {
+	pm.Matrices = make([]mat64.Matrix, len(pm.Bags))
+	for idx, bag := range pm.Bags {
+		data, rows := pm.TokenData(bag)
+		pm.Matrices[idx] = mat64.NewDense(rows, pm.W2V.Size, data).T()
+	}
+}
+
 
 func (pm *PoemModel) TokenizeWords(words []string) []string {
 	POS_TAGS := map[string]string {
@@ -96,6 +108,28 @@ func (pm *PoemModel) TokenVectors(tokens []string) [][]float32 {
 	return vecs
 }
 
+func (pm *PoemModel) TokenData(tokens []string) (data []float64, rows int) {
+	data = make([]float64, 0, pm.W2V.Size)
+	rows = 0
+	for _, token := range tokens {
+		vector, err := pm.W2V.WordVector(token)
+		if err != nil {
+			continue
+		}
+		for _, val := range vector {
+			data = append(data, float64(val))
+		}
+		rows ++
+	}
+
+	if rows > 0 {
+		return data, rows
+	} else {
+		return  nil, 0
+	}
+}
+
+
 func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 	simPoems := make([]string, 0, topN)
 	tokens := pm.TokenizeWords(queryWords)
@@ -130,6 +164,55 @@ func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 
 		if len(poemVecs) > 0 {
 			sim /= float32(len(poemVecs) * len(queryVecs))
+		}
+
+		sims[idx].Idx = idx
+		sims[idx].Sim = sim
+	}
+
+	sort.Slice(sims, func (i, j int) bool {
+		return sims[i].Sim > sims[j].Sim
+	})
+
+	for i := 0; i < topN; i ++ {
+		simPoems = append(simPoems, pm.Poems[sims[i].Idx])
+	}
+
+	return simPoems
+}
+
+
+func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
+	simPoems := make([]string, 0, topN)
+	tokens := pm.TokenizeWords(queryWords)
+	if len(tokens) == 0 || topN <= 0 {
+		return simPoems
+	}
+
+	queryData, queryVecs := pm.TokenData(tokens)
+
+	if queryVecs == 0 {
+		return simPoems
+	}
+
+	queryMx := mat64.NewDense(queryVecs, pm.W2V.Size, queryData)
+
+	type PoemSimilarity struct {
+		Idx	int
+		Sim float64
+	}
+
+	sims := make([]PoemSimilarity, len(pm.Bags))
+
+	for idx, _ := range pm.Bags {
+		var resMx mat64.Dense
+		bagMx := pm.Matrices[idx]
+		_, poemVecs := bagMx.Dims()
+		resMx.Mul(queryMx, bagMx)
+		sim := mat64.Sum(&resMx)
+
+		if poemVecs > 0 {
+			sim /= float64(poemVecs * queryVecs)
 		}
 
 		sims[idx].Idx = idx
