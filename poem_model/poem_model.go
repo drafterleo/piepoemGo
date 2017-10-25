@@ -49,7 +49,7 @@ func (pm *PoemModel) Vectorize() {
 func (pm *PoemModel) Matricize() {
 	pm.Matrices = make([]mat64.Matrix, len(pm.Bags))
 	for idx, bag := range pm.Bags {
-		data, rows := pm.TokenData(bag)
+		data, rows := pm.TokenVectorsData(bag)
 		pm.Matrices[idx] = mat64.NewDense(rows, pm.W2V.Size, data).T()
 	}
 }
@@ -108,7 +108,7 @@ func (pm *PoemModel) TokenVectors(tokens []string) [][]float32 {
 	return vecs
 }
 
-func (pm *PoemModel) TokenData(tokens []string) (data []float64, rows int) {
+func (pm *PoemModel) TokenVectorsData(tokens []string) (data []float64, rows int) {
 	data = make([]float64, 0, pm.W2V.Size)
 	rows = 0
 	for _, token := range tokens {
@@ -155,7 +155,6 @@ func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 				var dist float32
 				for i := 0; i < pm.W2V.Size; i ++ {
 					// dot production
-					//dist += qv[i] * pv[i]
 					dist += qv[i] * pv[i]
 				}
 				sim += dist
@@ -189,13 +188,13 @@ func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 		return simPoems
 	}
 
-	queryData, queryVecs := pm.TokenData(tokens)
+	queryData, queryVecsN := pm.TokenVectorsData(tokens)
 
-	if queryVecs == 0 {
+	if queryVecsN == 0 {
 		return simPoems
 	}
 
-	queryMx := mat64.NewDense(queryVecs, pm.W2V.Size, queryData)
+	queryMx := mat64.NewDense(queryVecsN, pm.W2V.Size, queryData)
 
 	type PoemSimilarity struct {
 		Idx	int
@@ -207,12 +206,12 @@ func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 	for idx, _ := range pm.Bags {
 		var resMx mat64.Dense
 		bagMx := pm.Matrices[idx]
-		_, poemVecs := bagMx.Dims()
+		_, poemVecsN := bagMx.Dims()
 		resMx.Mul(queryMx, bagMx)
 		sim := mat64.Sum(&resMx)
 
-		if poemVecs > 0 {
-			sim /= float64(poemVecs * queryVecs)
+		if poemVecsN > 0 {
+			sim /= float64(poemVecsN * queryVecsN)
 		}
 
 		sims[idx].Idx = idx
