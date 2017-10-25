@@ -5,7 +5,7 @@ import (
 	"./poem_model"
 	"./morph"
 	"time"
-	_ "strconv"
+	"strconv"
 )
 
 func main () {
@@ -40,30 +40,30 @@ func testPoemModel() {
 
 	queryWords := []string{"вальс"}
 
-	for i := 0; i < 20; i ++ {
-		start := time.Now()
-		poems := pm.SimilarPoemsMx(queryWords, 1)
-		elapsed := time.Since(start)
-		fmt.Println(elapsed)
-		fmt.Printf("%+v\n", poems)
-	}
-
-	//fmt.Println("start...")
-	//for i := 0; i < 100; i ++ {
-	//	go poemQuery(pm, queryWords, strconv.Itoa(i) + "a")
-	//	time.Sleep(time.Microsecond * 200)
-	//	//go poemQuery(pm, queryWords, strconv.Itoa(i) + "b")
-	//	//time.Sleep(time.Microsecond * 200)
-	//	//go poemQuery(pm, queryWords, strconv.Itoa(i) + "c")
-	//	//time.Sleep(time.Microsecond * 200)
+	//for i := 0; i < 20; i ++ {
+	//	start := time.Now()
+	//	poems := pm.SimilarPoemsMx(queryWords, 1)
+	//	elapsed := time.Since(start)
+	//	fmt.Println(elapsed)
+	//	fmt.Printf("%+v\n", poems)
 	//}
 
-	//fmt.Scanln()
+	fmt.Println("start...")
+	for i := 0; i < 100; i ++ {
+		go poemQuery(pm, queryWords, strconv.Itoa(i) + "a")
+		time.Sleep(time.Microsecond * 100)
+		//go poemQuery(pm, queryWords, strconv.Itoa(i) + "b")
+		//time.Sleep(time.Microsecond * 200)
+		//go poemQuery(pm, queryWords, strconv.Itoa(i) + "c")
+		//time.Sleep(time.Microsecond * 200)
+	}
+
+	fmt.Scanln()
 }
 
 func poemQuery(pm * poem_model.PoemModel, words []string, id string) {
 	start := time.Now()
-	_ = pm.SimilarPoems(words, 1)
+	_ = pm.SimilarPoemsMx(words, 1)
 	elapsed := time.Since(start)
 	fmt.Printf("%s : %v\n", id, elapsed)
 }
