@@ -1,77 +1,74 @@
 package main
 
 import (
-	"fmt"
 	"./poem_model"
-	"./morph"
-	"time"
-	"strconv"
+	"net/http"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+	"fmt"
+	"strings"
 )
 
+var poemModel *poem_model.PoemModel
+
 func main () {
-	testPoemModel()
+	//testPoemModel()
 	//testMorph()
+
+	startPoemModel()
+	startRouter()
 }
 
-func testPoemModel() {
-	pm := new(poem_model.PoemModel)
+func startPoemModel() {
+	poemModel = new(poem_model.PoemModel)
 
 	fmt.Println("Loading w2v:")
-	pm.LoadW2VModel("C:/data/ruscorpora_1_300_10.bin")
-	pm.LoadJsonModel("./data/poems_model.json")
-	pm.Vectorize()
-	pm.Matricize()
-	//fmt.Println(pm.Poems[0])
-	//fmt.Println(pm.Bags[0])
+	poemModel.LoadW2VModel("C:/data/ruscorpora_1_300_10.bin")
+	poemModel.LoadJsonModel("./data/poems_model.json")
+	poemModel.Matricize()
+}
+
+func startRouter(){
+	router := gin.Default()
+
+	router.Use(cors.Default())
+
+	router.LoadHTMLGlob("./site/*.html")
+
+	router.Static("/css", "./site/css")
+	router.Static("/img", "./site/img")
+	router.Static("/fonts", "./site/fonts")
+	router.Static("/dist", "./site/dist")
+	router.StaticFile("/favicon.ico", "./resources/favicon.ico")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+
+	router.POST("/poems", postPoems)
+
+	router.Run(":8085")
+}
 
 
-	//for i := 1000; i < 2000; i ++ {
-	//  fmt.Printf("%v ", pm.W2V.Vocab[i])
-	//}
-	//fmt.Println(pm.W2V.Vec[0])
-
-	//seedWords := []string{"принц", "нищий"}
-	//tokens := pm.TokenizeWords(seedWords)
-	//fmt.Printf("%+v", tokens)
-	//bestWords, err := pm.W2V.MostSimilar(tokens, 10)
-	//if err == nil {
-	//	fmt.Printf("Best Words %+v\n", bestWords)
-	//}
-
-	queryWords := []string{"вальс"}
-
-	//for i := 0; i < 20; i ++ {
-	//	start := time.Now()
-	//	poems := pm.SimilarPoemsMx(queryWords, 1)
-	//	elapsed := time.Since(start)
-	//	fmt.Println(elapsed)
-	//	fmt.Printf("%+v\n", poems)
-	//}
-
-	fmt.Println("start...")
-	for i := 0; i < 100; i ++ {
-		go poemQuery(pm, queryWords, strconv.Itoa(i) + "a")
-		time.Sleep(time.Microsecond * 100)
-		//go poemQuery(pm, queryWords, strconv.Itoa(i) + "b")
-		//time.Sleep(time.Microsecond * 200)
-		//go poemQuery(pm, queryWords, strconv.Itoa(i) + "c")
-		//time.Sleep(time.Microsecond * 200)
+func postPoems (c *gin.Context) {
+	var data struct {
+		Words string `json:"words"`
 	}
 
-	fmt.Scanln()
-}
-
-func poemQuery(pm * poem_model.PoemModel, words []string, id string) {
-	start := time.Now()
-	_ = pm.SimilarPoemsMx(words, 1)
-	elapsed := time.Since(start)
-	fmt.Printf("%s : %v\n", id, elapsed)
-}
-
-func testMorph () {
-	words, norms, tags := morph.Parse("еж")
-	for i := range words {
-		fmt.Printf("%-4s %-5s %s\n", words[i], norms[i], tags[i])
+	err := c.BindJSON(&data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-}
 
+	fmt.Printf("words: <%s>\n", data.Words)
+	queryWords := strings.Fields(data.Words)
+	fmt.Println(queryWords)
+	poems := poemModel.SimilarPoemsMx(queryWords, 10)
+	for idx, poem := range poems {
+		poems[idx] = strings.Replace(poem, "\n", "<br>", -1)
+	}
+
+	c.JSON(http.StatusOK, poems)
+}
