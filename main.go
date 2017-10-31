@@ -1,13 +1,30 @@
 package main
 
 import (
+	"gopkg.in/gcfg.v1"
+
 	"./poem_model"
+
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+
 	"fmt"
 	"strings"
 )
+
+var config struct {
+	Models struct {
+		W2V string
+		Poems string
+	}
+}
+
+const defaultConfig = `
+[models]
+w2v="c:/data/ruscorpora_1_300_10.bin"
+poems="./data/poems_model.json"
+`
 
 var poemModel *poem_model.PoemModel
 
@@ -15,16 +32,31 @@ func main () {
 	//testPoemModel()
 	//testMorph()
 
+	loadConfig("./config.cfg")
 	startPoemModel()
 	startRouter()
+}
+
+func loadConfig(cfgFile string) error {
+	var err error
+
+	if cfgFile != "" {
+		err = gcfg.ReadFileInto(&config, cfgFile)
+	} else {
+		err = gcfg.ReadStringInto(&config, defaultConfig)
+	}
+
+	fmt.Println(config)
+
+	return err
 }
 
 func startPoemModel() {
 	poemModel = new(poem_model.PoemModel)
 
 	fmt.Println("Loading w2v:")
-	poemModel.LoadW2VModel("C:/data/ruscorpora_1_300_10.bin")
-	poemModel.LoadJsonModel("./data/poems_model.json")
+	poemModel.LoadW2VModel(config.Models.W2V)
+	poemModel.LoadJsonModel(config.Models.Poems)
 	poemModel.Matricize()
 }
 
