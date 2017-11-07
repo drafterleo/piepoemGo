@@ -7,7 +7,7 @@
             <div class="w3-container w3-margin">
                 <input id="search-edit"
                        class="w3-input w3-border w3-xlarge"
-                       name="search"
+                       name=""
                        type="text"
                        v-model="searchText"
                        @keyup.enter="postPoemsRequest"

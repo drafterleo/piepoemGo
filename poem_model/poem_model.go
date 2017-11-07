@@ -184,13 +184,8 @@ func (pm *PoemModel) SimilarPoems(queryWords []string, topN int) []string {
 func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 	simPoems := make([]string, 0, topN)
 	tokens := pm.TokenizeWords(queryWords)
-	if len(tokens) == 0 || topN <= 0 {
-		return simPoems
-	}
-
 	queryData, queryVecsN := pm.TokenVectorsData(tokens)
-
-	if queryVecsN == 0 {
+	if len(tokens) == 0 || topN <= 0 || queryVecsN == 0{
 		return simPoems
 	}
 
@@ -211,7 +206,7 @@ func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 		sim := mat64.Sum(&resMx)
 
 		if poemVecsN > 0 {
-			sim /= float64(poemVecsN * queryVecsN)
+			sim /= float64(poemVecsN + queryVecsN)
 		}
 
 		sims[idx].Idx = idx

@@ -7,7 +7,7 @@ import (
 
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-contrib/cors"
+	//"github.com/gin-contrib/cors"
 
 	"fmt"
 	"strings"
@@ -46,7 +46,7 @@ func loadConfig(cfgFile string) error {
 		err = gcfg.ReadStringInto(&config, defaultConfig)
 	}
 
-	fmt.Println(config)
+	//fmt.Println(config)
 
 	return err
 }
@@ -63,7 +63,7 @@ func startPoemModel() {
 func startRouter(){
 	router := gin.Default()
 
-	router.Use(cors.Default())
+	//router.Use(cors.Default())
 
 	router.LoadHTMLGlob("./site/*.html")
 
