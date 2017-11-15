@@ -95,7 +95,7 @@ func postPoems (c *gin.Context) {
 	}
 
 	fmt.Printf("words: <%s>\n", data.Words)
-	queryWords := strings.Fields(data.Words)
+	queryWords := strings.Fields(strings.ToLower(data.Words))
 	fmt.Println(queryWords)
 	poems := poemModel.SimilarPoemsMx(queryWords, 10)
 	for idx, poem := range poems {
