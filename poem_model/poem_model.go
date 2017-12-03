@@ -6,7 +6,8 @@ import (
 	"../morph"
 	"strings"
 	"sort"
-	"github.com/gonum/matrix/mat64"
+	//"github.com/gonum/matrix/mat64"
+	"gonum.org/v1/gonum/mat"
 )
 
 type PoemModel struct {
@@ -14,7 +15,7 @@ type PoemModel struct {
 	Bags     [][]string `json:"bags"`
 	W2V      W2VModel
 	Vectors  [][][]float32
-	Matrices []mat64.Matrix
+	Matrices []mat.Matrix
 }
 
 
@@ -47,10 +48,10 @@ func (pm *PoemModel) Vectorize() {
 
 
 func (pm *PoemModel) Matricize() {
-	pm.Matrices = make([]mat64.Matrix, len(pm.Bags))
+	pm.Matrices = make([]mat.Matrix, len(pm.Bags))
 	for idx, bag := range pm.Bags {
 		data, rows := pm.TokenVectorsData(bag)
-		pm.Matrices[idx] = mat64.NewDense(rows, pm.W2V.Size, data).T()
+		pm.Matrices[idx] = mat.NewDense(rows, pm.W2V.Size, data).T()
 	}
 }
 
@@ -189,7 +190,7 @@ func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 		return simPoems
 	}
 
-	queryMx := mat64.NewDense(queryVecsN, pm.W2V.Size, queryData)
+	queryMx := mat.NewDense(queryVecsN, pm.W2V.Size, queryData)
 
 	type PoemSimilarity struct {
 		Idx	int
@@ -199,11 +200,11 @@ func (pm *PoemModel) SimilarPoemsMx(queryWords []string, topN int) []string {
 	sims := make([]PoemSimilarity, len(pm.Bags))
 
 	for idx, _ := range pm.Bags {
-		var resMx mat64.Dense
+		var resMx mat.Dense
 		bagMx := pm.Matrices[idx]
 		_, poemVecsN := bagMx.Dims()
 		resMx.Mul(queryMx, bagMx)
-		sim := mat64.Sum(&resMx)
+		sim := mat.Sum(&resMx)
 
 		if poemVecsN > 0 {
 			sim /= float64(poemVecsN + queryVecsN)
