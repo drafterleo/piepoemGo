@@ -1,5 +1,7 @@
-# piepoemGo
+# Дистрибутивно-семантический поиск стишков-пирожков
 
-Install dictionaries:
+Пути к файлам моделей прописываются в config.cfg
 
-    pip install pymorphy2_dicts_ru
+    [models]
+    w2v="c:/data/ruscorpora_1_300_10.bin"
+    poems="./data/poems_model.json"
