@@ -25,6 +25,7 @@ const defaultConfig = `
 w2v="c:/data/ruscorpora_1_300_10.bin"
 poems="./data/poems_model.json"
 `
+const MAX_SEARCH_LENGTH = 100
 
 var poemModel *poem_model.PoemModel
 
@@ -75,7 +76,7 @@ func startRouter(){
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
-		fmt.Println(c.Request.URL.Query())
+		// fmt.Println(c.Request.URL.Query())
 	})
 
 	router.POST("/poems", postPoems)
@@ -95,6 +96,9 @@ func postPoems (c *gin.Context) {
 		return
 	}
 
+	if len(data.Words) > MAX_SEARCH_LENGTH {
+		data.Words = data.Words[0:MAX_SEARCH_LENGTH]
+	}
 	fmt.Printf("words: <%s>\n", data.Words)
 	queryWords := strings.Fields(strings.ToLower(data.Words))
 	fmt.Println(queryWords)
