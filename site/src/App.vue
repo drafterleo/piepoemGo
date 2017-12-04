@@ -85,13 +85,15 @@
             }
         },
         mounted: function () {
-            var searchStr = decodeURIComponent(document.location.search.substring(1));
-            //console.log('search: ' + searchStr);
-            if (searchStr.length > 0) {
-                this.showStartMessage = false;
-                this.searchText = searchStr;
-                this.fetchPoems();
-            }
+            this.$nextTick(function () {
+                var searchStr = decodeURIComponent(document.location.search.substring(1));
+                //console.log('search: ' + searchStr);
+                if (searchStr.length > 0) {
+                    this.showStartMessage = false;
+                    this.searchText = searchStr;
+                    this.fetchPoems();
+                }
+            })
         },
         watch: {
 //            showSpinner: function (val) {
