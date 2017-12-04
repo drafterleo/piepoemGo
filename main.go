@@ -75,6 +75,7 @@ func startRouter(){
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
+		fmt.Println(c.Request.URL.Query())
 	})
 
 	router.POST("/poems", postPoems)
